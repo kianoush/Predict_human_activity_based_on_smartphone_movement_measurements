@@ -17,10 +17,13 @@ Load data
 raw_data = pd.read_csv('smartphone_activity_dataset.csv')
 
 data = raw_data.iloc[:, :561]
-lables = raw_data.iloc[:, 561]
+lable = raw_data.iloc[:, 561]
 
 data = data.values
-lables = lables.values
+lable = lable.values
+lables=[]
+for i in range(len(lable)):
+    lables.append(lable[i]-1)
 
 print(np.unique(lables))
 """
@@ -43,7 +46,9 @@ Model
 """
 num_class = 6
 num_featurs = X_train.shape[1]
-num_hiddenl = 10
+num_hiddenl = 40
+num_hiddenl1 = 35
+
 
 model = torch.nn.Sequential(torch.nn.Linear(num_featurs, num_hiddenl),
                             torch.nn.ReLU(),
@@ -72,11 +77,13 @@ num_samples_valid = torch.tensor(X_valid.shape[0])
 num_epochs = 200
 
 for epoch in range(num_epochs):
-    optimizer.zero_grad()
+    optim = optimizer.zero_grad()
     Y_pred = model(X_train)
     loss_value = loss(Y_pred, Y_train)
-    num_corrects = torch.sum(torch.max(Y_pred, 1)[1]==Y_train)
-    acc_train = num_corrects.float() /num_samples_train.float()
+
+    num_corrects = torch.sum(torch.max(Y_pred, 1)[1] == Y_train)
+    acc_train = num_corrects.float() / float(num_samples_train)
+
     loss_value.backward()
     optimizer.step()
 
@@ -86,5 +93,11 @@ for epoch in range(num_epochs):
     acc_valid = num_corrects.float() /num_samples_valid.float()
     print("Epoch: ", epoch, 'Train Loss: ', loss_value.item(),'Train Accurecy: ',acc_train.item(), 'VALIDATION acoreccy', acc_valid.item())
 
+
+
+yp = model(X_test)
+num_corrects = torch.sum(torch.max(yp, 1)[1]==Y_test)
+acc_test = num_corrects.float() / float(num_samples_test)
+print('Test Accurecy: ', acc_test.item())
 
 print("END!!!")
